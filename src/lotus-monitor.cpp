@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <thread>
 #include <cstring>
+#include <string>
 
 #include <fcntl.h>
 #include <poll.h>
