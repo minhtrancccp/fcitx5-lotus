@@ -47,86 +47,125 @@
 
 This project is an optimized fork of [VMK input method](https://github.com/thanhpy2009/VMK). Sincere thanks to the author Thanh for laying the foundation for this input method.
 
-> **Note:** Uninstall and delete the `fcitx5-vmk` configuration before installing `fcitx5-lotus` to avoid errors.
->
-> <details>
-> <summary><b>Uninstall and delete <code>fcitx5-vmk</code> configuration</b></summary>
->
-> <details>
-> <summary><b>Arch / Arch-based - AUR</b></summary>
-> <br>
->
-> You can use `pacman` (recommended), `yay`, or `paru` to uninstall:
->
-> ```bash
-> sudo pacman -Rns fcitx5-vmk
-> ```
->
-> ```bash
-> yay -Rns fcitx5-vmk
-> ```
->
-> ```bash
-> paru -Rns fcitx5-vmk
-> ```
->
-> > **Note:** Config files in `$HOME` will be kept.
->
-> </details>
->
-> <details>
-> <summary><b>Debian / Ubuntu / Fedora / openSUSE</b></summary>
-> <br>
->
-> - <b>Debian/Ubuntu</b>
->
-> ```bash
-> sudo apt remove fcitx5-vmk
-> ```
->
-> - <b>Fedora</b>
->
-> ```bash
-> sudo dnf remove fcitx5-vmk
-> ```
->
-> - <b>openSUSE</b>
->
-> ```bash
-> sudo zypper remove fcitx5-vmk
-> ```
->
-> </details>
->
-> <details>
-> <summary><b>NixOS</b></summary>
-> <br>
->
-> Delete (or comment out) the `services.fcitx5-vmk` and `inputs` lines in the config file, then rebuild the system. NixOS will clean up automatically.
->
-> </details>
->
-> <details>
-> <summary><b>Build from source</b></summary>
-> <br>
->
-> Go back to the built source code directory and run:
->
-> ```bash
-> sudo make uninstall
-> ```
->
-> </details>
->
-> ---
->
-> Delete incompatible `vmk` configuration:
->
-> ```bash
-> rm ~/.config/fcitx5/conf/vmk-*.conf
-> ```
->
-> </details>
+> **Note:** Please uninstall the `fcitx5-vmk` configuration and remove the old OBS repository (if any) before installing `fcitx5-lotus` to avoid errors.
+
+<details>
+<summary><b>Uninstall and delete <code>fcitx5-vmk</code> configuration</b></summary>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white" alt="Arch Linux" height="25"></summary>
+<br>
+
+You can use `pacman` (recommended), `yay`, or `paru` to uninstall:
+
+```bash
+sudo pacman -Rns fcitx5-vmk
+```
+
+```bash
+yay -Rns fcitx5-vmk
+```
+
+```bash
+paru -Rns fcitx5-vmk
+```
+
+> **Note:** Config files in `$HOME` will be kept.
+
+</details>
+
+<details>
+<summary><b>Debian / Ubuntu / Fedora / openSUSE</b></summary>
+<br>
+
+- **Debian/Ubuntu**
+
+```bash
+sudo apt remove fcitx5-vmk
+```
+
+- **Fedora**
+
+```bash
+sudo dnf remove fcitx5-vmk
+```
+
+- **openSUSE**
+
+```bash
+sudo zypper remove fcitx5-vmk
+```
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/NixOS-5277C3?style=for-the-badge&logo=nixos&logoColor=white" alt="NixOS" height="25"></summary>
+<br>
+
+Delete (or comment out) the `services.fcitx5-vmk` and `inputs` lines in the config file, then rebuild the system. NixOS will clean up automatically.
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/Source-000000?style=for-the-badge&logo=github&logoColor=white" alt="Source" height="25"></summary>
+<br>
+
+Go back to the built source code directory and run:
+
+```bash
+sudo make uninstall
+```
+
+</details>
+
+---
+
+Delete incompatible `vmk` configuration:
+
+```bash
+rm ~/.config/fcitx5/conf/vmk-*.conf
+```
+
+</details>
+
+<details>
+<summary><b>Remove old OBS repo (if any)</b></summary>
+<br>
+
+If you previously installed `fcitx5-lotus` via OBS, run the following commands to remove the old repo:
+
+- **Arch Linux:**
+
+```bash
+# Remove repo in /etc/pacman.conf
+# Remove key:
+sudo pacman-key --finger | grep "home:iamnanoka" -B 1
+sudo pacman-key --delete "ID_OF_KEY"
+sudo pacman-key --updatedb
+sudo pacman -Syy
+```
+
+- **Debian / Ubuntu:**
+
+```bash
+sudo rm -f /etc/apt/sources.list.d/home:iamnanoka.list
+sudo rm -f /etc/apt/trusted.gpg.d/home_iamnanoka.gpg
+sudo apt update
+```
+
+- **Fedora:**
+
+```bash
+sudo rm /etc/yum.repos.d/home:iamnanoka.repo
+```
+
+- **openSUSE:**
+
+```bash
+sudo zypper removerepo home_iamnanoka
+```
+
+</details>
 
 <details>
   <summary><b>Table of Contents</b></summary>
@@ -146,8 +185,10 @@ This project is an optimized fork of [VMK input method](https://github.com/thanh
 
 ## 📦 Installation
 
+<sub>💡 Click beside the badge to expand the instructions.</sub>
+
 <details>
-<summary><b>Arch / Arch-based - AUR</b></summary>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white" alt="Arch Linux" height="25"></a></summary>
 <br>
 
 Currently, AUR has 3 installation packages to choose from:
@@ -175,15 +216,65 @@ paru -S fcitx5-lotus
 </details>
 
 <details>
-<summary><b>Debian / Ubuntu / Fedora / openSUSE</b></summary>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/Debian-D70A53?style=for-the-badge&logo=debian&logoColor=white" alt="Debian" height="25"></a></summary>
 <br>
 
-You can see the installation method for each distro [here](INSTALL.md).
+```bash
+# Auto-detect codename and install
+CODENAME=$(grep '^VERSION_CODENAME=' /etc/os-release | cut -d'=' -f2)
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://fcitx5-lotus.pages.dev/pubkey.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/fcitx5-lotus.gpg
+echo "deb [signed-by=/etc/apt/keyrings/fcitx5-lotus.gpg] https://fcitx5-lotus.pages.dev/apt/$CODENAME $CODENAME main" | sudo tee /etc/apt/sources.list.d/fcitx5-lotus.list
+sudo apt update && sudo apt install fcitx5-lotus
+```
 
 </details>
 
 <details>
-<summary><b>NixOS</b></summary>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white" alt="Ubuntu" height="25"></a></summary>
+<br>
+
+```bash
+# Auto-detect codename and install
+CODENAME=$(grep '^VERSION_CODENAME=' /etc/os-release | cut -d'=' -f2)
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://fcitx5-lotus.pages.dev/pubkey.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/fcitx5-lotus.gpg
+echo "deb [signed-by=/etc/apt/keyrings/fcitx5-lotus.gpg] https://fcitx5-lotus.pages.dev/apt/$CODENAME $CODENAME main" | sudo tee /etc/apt/sources.list.d/fcitx5-lotus.list
+sudo apt update && sudo apt install fcitx5-lotus
+```
+
+</details>
+
+<details>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/Fedora-51A2DA?style=for-the-badge&logo=fedora&logoColor=white" alt="Fedora" height="25"></a></summary>
+<br>
+
+```bash
+# Auto-detect version and install
+RELEASEVER=$(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2)
+sudo rpm --import https://fcitx5-lotus.pages.dev/pubkey.gpg
+sudo dnf config-manager addrepo --from-repofile=https://fcitx5-lotus.pages.dev/rpm/fedora/fcitx5-lotus-$RELEASEVER.repo
+sudo dnf install fcitx5-lotus
+```
+
+</details>
+
+<details>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/openSUSE-73BA42?style=for-the-badge&logo=opensuse&logoColor=white" alt="openSUSE" height="25"></a></summary>
+<br>
+
+```bash
+# Add repo and install (Tumbleweed)
+sudo rpm --import https://fcitx5-lotus.pages.dev/pubkey.gpg
+sudo zypper addrepo https://fcitx5-lotus.pages.dev/rpm/opensuse/fcitx5-lotus-tumbleweed.repo
+sudo zypper refresh
+sudo zypper install fcitx5-lotus
+```
+
+</details>
+
+<details>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/NixOS-5277C3?style=for-the-badge&logo=nixos&logoColor=white" alt="NixOS" height="25"></a></summary>
 <br>
 
 Add fcitx5-lotus input to `flake.nix`:
@@ -228,7 +319,25 @@ Rebuild the system to install.
 </details>
 
 <details>
-<summary><b>Build from source</b></summary>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/GitHub_Releases-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Releases" height="25"></a></summary>
+<br>
+
+Download `.deb` or `.rpm` files directly from [GitHub Releases](https://github.com/LotusInputMethod/fcitx5-lotus/releases/latest):
+
+```bash
+# Debian/Ubuntu
+sudo dpkg -i fcitx5-lotus_*.deb
+```
+
+```bash
+# Fedora / openSUSE
+sudo rpm -i fcitx5-lotus-*.rpm
+```
+
+</details>
+
+<details>
+<summary><a href="#installation"><img src="https://img.shields.io/badge/Source-000000?style=for-the-badge&logo=github&logoColor=white" alt="Source" height="25"></a></summary>
 <br>
 
 > **IMPORTANT RECOMMENDATION:**
@@ -237,7 +346,7 @@ Rebuild the system to install.
 >
 > Manual compilation requires a good understanding of the system directory structure. If you encounter "Not Available" errors or missing libraries when installing this way on popular distros (Ubuntu/Fedora...), please return to using Cloudflare Pages for stability and automatic updates.
 
-##### System Requirements
+### System Requirements
 
 - **Debian/Ubuntu**
 
@@ -257,7 +366,7 @@ sudo dnf install cmake extra-cmake-modules fcitx5-devel libinput-devel libudev-d
 sudo zypper install cmake extra-cmake-modules fcitx5-devel libinput-devel systemd-devel gcc-c++ go hicolor-icon-theme systemd-devel libX11-devel udev fcitx5-qt-devel
 ```
 
-##### Compilation and Installation
+### Compilation and Installation
 
 ```bash
 # Clone repository
@@ -289,7 +398,8 @@ After installation, you need to follow these steps to enable the fcitx5-lotus in
 
 The server helps the input method interact better with the system (especially sending backspace and fixing errors).
 
-- **Bash / Zsh:**
+<details>
+<summary><b>Bash / Zsh</b></summary>
 
 ```bash
 # Enable and start the service (automatically fixes missing systemd user errors if any)
@@ -297,7 +407,10 @@ sudo systemctl enable --now fcitx5-lotus-server@$(whoami).service || \
 (sudo systemd-sysusers && sudo systemctl enable --now fcitx5-lotus-server@$(whoami).service)
 ```
 
-- **Fish shell:**
+</details>
+
+<details>
+<summary><b>Fish shell</b></summary>
 
 ```fish
 # Enable and start the service (automatically fixes missing systemd user errors if any)
@@ -306,8 +419,11 @@ sudo systemctl enable --now fcitx5-lotus-server@(whoami).service; or begin
 end
 ```
 
+</details>
+
+<p><b>Check status (if you see <span style="color: green;">active (running)</span>, it's OK):</b></p>
+
 ```bash
-# Check status (if you see green active (running), it's OK)
 systemctl status fcitx5-lotus-server@$(whoami).service
 ```
 
@@ -441,6 +557,7 @@ After logging out and logging in again:
 2. Find **Lotus** in the right column.
 3. Click the **<** arrow to add it to the left column.
 4. Apply.
+
 <details>
   <summary><b>Additional configuration for Wayland (KDE, Hyprland Chromium-based, Electron)</b></summary>
 
@@ -461,7 +578,7 @@ permission = fcitx5-lotus-server, keyboard, allow
 
 Add this line to file `~/.config/kanata/kanata.kbd`
 
-```
+```common-lisp
 (defcfg
   ...
   linux-dev-names-exclude ("Lotus-Uinput-Server")
@@ -479,7 +596,12 @@ Add this line to file `~/.config/kanata/kanata.kbd`
 
 ### 1. Customize input method
 
-- **Access:** Right-click the Lotus icon on the system tray to open customization.
+You can customize the input method settings in two ways:
+
+<details open>
+<summary><b>Option 1: Right-click Menu (Quick Settings)</b></summary>
+
+Right-click the Lotus icon on the system tray to quickly toggle settings:
 
 | Option                  | Description                                           | Default |
 | :---------------------- | :---------------------------------------------------- | :------ |
@@ -489,20 +611,30 @@ Add this line to file `~/.config/kanata/kanata.kbd`
 | **Capitalize Macro**    | Enable/disable uppercase shorthand typing.            | On      |
 | **Auto non-VN restore** | Enable/disable auto-restore for non-Vietnamese words. | On      |
 
-- Alternatively, you can right-click the Lotus icon in the system tray -> **Input Method Settings** -> Select **Lotus** -> **Configure** (the gear icon in the middle of the _Fcitx Configuration_ interface) to customize some additional options in detail, such as:
-  - Macro: click the gear icon next to the _Input Method_ selection row to open the interface for adding or removing macros for the current input method. **Note:** shorthand entries only take effect for the selected input method. If you want to apply them to another input method, switch to that method and re-add the shorthand entries from scratch.
-  - Custom Keymap: click the gear icon on the _Custom Keymap_ row to open the keymap customization interface. You can import a keymap from an existing input method or create your own. After customizing, select the **Custom** input method to apply your custom keymap.
-  - Mode menu hotkey: by default, this menu uses the `` ` `` key to open the menu in all applications. If your workflow frequently uses this key, or you simply prefer a different key, click the hotkey selection button next to the _Mode menu hotkey_ option to enter your preferred shortcut. You can also click the `+` button to add additional hotkeys if desired.
-  - Some options have been moved from the taskbar menu to Fcitx5 configuration to simplify:
-    | Option | Description | Default |
-    | :---------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :-------------- |
-    | **Mode** | Select typing mode. | Uinput (Smooth) |
-    | **Input Method** | Select input method. | Telex |
-    | **Use oà, uý (Instead Of òa, úy)** | Enable/disable modern tone mark placement style _(e.g. oà, *uý instead of òa, *úy)_. | On |
-    | **Allow Type With More Freedom** | Enable/disable free tone marking. | On |
-    | **Allow dd To Produce đ When Auto Restore Keys With Invalid Words Is On** | Enable/disable allowing "dd" to produce "đ" when _Auto non-VN restore_ is On | On |
-    | **Fix Uinput Mode With Ack** | Enable/disable fixing Uinput mode with ack.<br/>Recommended when using Chromium-based applications (Chrome, Brave, Edge, ...). | Off |
-    | **Use Lotus Status Icons** | Enable/disable using Lotus icons instead of the default V E icons. | Off |
+</details>
+
+<details>
+<summary><b>Option 2: Lotus - Fcitx Configuration Menu (Advanced Settings)</b></summary>
+
+Right-click the Lotus or Fcitx icon -> **Input Method Settings** -> Select **Lotus** -> Click the **Configure** (gear icon) in the middle.
+
+Advanced options available here:
+
+- **Macro:** Click the gear icon next to the _Input Method_ selection row to manage macros. (Note: Macros are per-input-method).
+- **Custom Keymap:** Click the gear icon on the _Custom Keymap_ row to customize your keymap. Select **Custom** input method to apply.
+- **Menu Hotkey:** Change the key to open the mode menu (default is `` ` ``) at _Mode menu hotkey_.
+
+| Option | Description | Default |
+| :---------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :-------------- |
+| **Mode** | Select typing mode. | Uinput (Smooth) |
+| **Input Method** | Select input method. | Telex |
+| **Use oà, uý (Instead Of òa, úy)** | Enable/disable modern tone mark placement style. | On |
+| **Allow Type With More Freedom** | Enable/disable free tone marking. | On |
+| **Allow dd To Produce đ When Auto Restore Keys With Invalid Words Is On** | Enable/disable allowing "dd" to produce "đ" when _Auto non-VN restore_ is On | On |
+| **Fix Uinput Mode With Ack** | Recommended when using Chromium-based applications (Chrome, Brave, Edge, ...). | Off |
+| **Use Lotus Status Icons** | Enable/disable using Lotus icons instead of the default V/E icons. | Off |
+
+</details>
 
 ### 2. Typing mode menu
 
@@ -532,8 +664,10 @@ Clicking the mouse or touching the touchpad while typing will automatically rese
 
 ## 🗑️ Uninstallation
 
+<sub>💡 Click beside the badge to expand the instructions.</sub>
+
 <details>
-<summary><b>Arch / Arch-based - AUR</b></summary>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white" alt="Arch Linux" height="25"></a></summary>
 <br>
 
 You can use `pacman` (recommended), `yay`, or `paru` to uninstall:
@@ -555,22 +689,38 @@ paru -Rns fcitx5-lotus
 </details>
 
 <details>
-<summary><b>Debian / Ubuntu / Fedora / openSUSE</b></summary>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/Debian-D70A53?style=for-the-badge&logo=debian&logoColor=white" alt="Debian" height="25"></a></summary>
 <br>
-
-- **Debian/Ubuntu**
 
 ```bash
 sudo apt remove fcitx5-lotus
 ```
 
-- **Fedora**
+</details>
+
+<details>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white" alt="Ubuntu" height="25"></a></summary>
+<br>
+
+```bash
+sudo apt remove fcitx5-lotus
+```
+
+</details>
+
+<details>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/Fedora-51A2DA?style=for-the-badge&logo=fedora&logoColor=white" alt="Fedora" height="25"></a></summary>
+<br>
 
 ```bash
 sudo dnf remove fcitx5-lotus
 ```
 
-- **openSUSE**
+</details>
+
+<details>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/openSUSE-73BA42?style=for-the-badge&logo=opensuse&logoColor=white" alt="openSUSE" height="25"></a></summary>
+<br>
 
 ```bash
 sudo zypper remove fcitx5-lotus
@@ -579,7 +729,7 @@ sudo zypper remove fcitx5-lotus
 </details>
 
 <details>
-<summary><b>NixOS</b></summary>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/NixOS-5277C3?style=for-the-badge&logo=nixos&logoColor=white" alt="NixOS" height="25"></a></summary>
 <br>
 
 Delete (or comment out) the `services.fcitx5-lotus` and `inputs` lines in the config file, then rebuild the system. NixOS will clean up automatically.
@@ -587,7 +737,30 @@ Delete (or comment out) the `services.fcitx5-lotus` and `inputs` lines in the co
 </details>
 
 <details>
-<summary><b>Build from source</b></summary>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/GitHub_Releases-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Releases" height="25"></a></summary>
+<br>
+
+Uninstall based on your distribution:
+
+```bash
+# Debian / Ubuntu
+sudo apt remove fcitx5-lotus
+```
+
+```bash
+# Fedora
+sudo dnf remove fcitx5-lotus
+```
+
+```bash
+# openSUSE
+sudo zypper remove fcitx5-lotus
+```
+
+</details>
+
+<details>
+<summary><a href="#uninstallation"><img src="https://img.shields.io/badge/Source-000000?style=for-the-badge&logo=github&logoColor=white" alt="Source" height="25"></a></summary>
 <br>
 
 Go back to the built source code directory and run:
