@@ -26,9 +26,37 @@
 #include <fcntl.h>
 
 namespace fcitx {
-    constexpr const char*     CharsetActionPrefix = "lotus-charset-";
-    constexpr const char*     MacroPrefix         = "macro/";
-    const std::string         CustomKeymapFile    = "conf/lotus-custom-keymap.conf";
+    constexpr const char* CharsetActionPrefix = "lotus-charset-";
+    constexpr const char* MacroPrefix         = "macro/";
+    const std::string     CustomKeymapFile    = "conf/lotus-custom-keymap.conf";
+
+    // Returns the KeySym that triggers the "Type hotkey char" action in the mode
+    // menu.  If the hotkey itself conflicts with a reserved menu key, falls back
+    // to FcitxKey_f.
+    static bool isAppModeMenuReservedKey(KeySym sym) {
+        switch (sym) {
+            case FcitxKey_1:
+            case FcitxKey_2:
+            case FcitxKey_3:
+            case FcitxKey_4:
+            case FcitxKey_q:
+            case FcitxKey_w:
+            case FcitxKey_e:
+            case FcitxKey_r:
+            case FcitxKey_Escape:
+            case FcitxKey_Tab:
+            case FcitxKey_ISO_Left_Tab:
+            case FcitxKey_Return:
+            case FcitxKey_space:
+            case FcitxKey_Up:
+            case FcitxKey_Down: return true;
+            default: return false;
+        }
+    }
+
+    static KeySym typeKeyForModeMenuHotkey(KeySym hotkeySym) {
+        return isAppModeMenuReservedKey(hotkeySym) ? FcitxKey_f : hotkeySym;
+    }
 
     static inline std::string macroFile(const std::string& imName) {
         return stringutils::concat("conf/lotus-macro-", imName, ".conf");
@@ -423,7 +451,24 @@ namespace fcitx {
                     selectionMade = true;
                     break;
                 }
-                default: break;
+                default: {
+                    const auto& kl = *config_.modeMenuKey;
+                    if (kl.size() == 1 && !kl[0].hasModifier()) {
+                        std::string charStr = Key::keySymToUTF8(kl[0].sym());
+                        if (!charStr.empty()) {
+                            if (keySym == typeKeyForModeMenuHotkey(kl[0].sym())) {
+                                isSelectingAppMode_ = false;
+                                ic->inputPanel().reset();
+                                ic->updateUserInterface(UserInterfaceComponent::InputPanel);
+                                auto state = ic->propertyFor(&factory_);
+                                state->reset();
+                                ic->commitString(charStr);
+                                return;
+                            }
+                        }
+                    }
+                    break;
+                }
             }
 
             if (selectedMode != LotusMode::NoMode) {
@@ -608,17 +653,33 @@ namespace fcitx {
         candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Uinput, _("[2] Uinput (Slow)")), applyMode(LotusMode::Uinput)));
         candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::UinputHC, _("[3] Uinput (Hardcore)")), applyMode(LotusMode::UinputHC)));
         candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::SurroundingText, _("[4] Surrounding Text")), applyMode(LotusMode::SurroundingText)));
-        candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Preedit, _("[Q] Preedit")), applyMode(LotusMode::Preedit)));
-        candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Emoji, _("[W] Emoji Picker")), applyMode(LotusMode::Emoji)));
-        candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Off, _("[E] OFF")), applyMode(LotusMode::Off)));
+        candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Preedit, _("[q] Preedit")), applyMode(LotusMode::Preedit)));
+        candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Emoji, _("[w] Emoji Picker")), applyMode(LotusMode::Emoji)));
+        candidateList->append(std::make_unique<AppModeCandidateWord>(getLabel(LotusMode::Off, _("[e] OFF")), applyMode(LotusMode::Off)));
 
-        candidateList->append(std::make_unique<AppModeCandidateWord>(Text(_("[R] Default Typing")), [this, cleanup](InputContext* ic) {
+        candidateList->append(std::make_unique<AppModeCandidateWord>(Text(_("[r] Default Typing")), [this, cleanup](InputContext* ic) {
             if (appRules_.erase(currentConfigureApp_) > 0) {
                 saveAppRules();
             }
             setMode(globalMode_, ic);
             cleanup(ic);
         }));
+
+        {
+            const auto& kl = *config_.modeMenuKey;
+            if (kl.size() == 1 && !kl[0].hasModifier()) {
+                std::string charStr = Key::keySymToUTF8(kl[0].sym());
+                if (!charStr.empty()) {
+                    KeySym      typeKeySym   = typeKeyForModeMenuHotkey(kl[0].sym());
+                    std::string typeKeyLabel = Key::keySymToUTF8(typeKeySym);
+                    std::string label        = "[" + typeKeyLabel + "] " + _("Type") + " " + charStr;
+                    candidateList->append(std::make_unique<AppModeCandidateWord>(Text(label), [cleanup, charStr](InputContext* ic) {
+                        cleanup(ic);
+                        ic->commitString(charStr);
+                    }));
+                }
+            }
+        }
 
         int selectedIndex = 1;
         switch (realMode) {
