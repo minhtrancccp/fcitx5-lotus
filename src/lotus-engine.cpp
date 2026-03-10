@@ -654,7 +654,8 @@ namespace fcitx {
                         hotkeySym == FcitxKey_w || hotkeySym == FcitxKey_e || hotkeySym == FcitxKey_r || hotkeySym == FcitxKey_Escape || hotkeySym == FcitxKey_Tab ||
                         hotkeySym == FcitxKey_Return || hotkeySym == FcitxKey_space || hotkeySym == FcitxKey_Up || hotkeySym == FcitxKey_Down || hotkeySym == FcitxKey_ISO_Left_Tab;
                     std::string typeKeyLabel = conflicts ? "F" : charStr;
-                    candidateList->append(std::make_unique<AppModeCandidateWord>(Text("[" + typeKeyLabel + "] Type '" + charStr + "'"), [cleanup, charStr](InputContext* ic) {
+                    std::string label        = "[" + typeKeyLabel + "] " + _("Type") + " '" + charStr + "'";
+                    candidateList->append(std::make_unique<AppModeCandidateWord>(Text(label), [cleanup, charStr](InputContext* ic) {
                         cleanup(ic);
                         ic->commitString(charStr);
                     }));
