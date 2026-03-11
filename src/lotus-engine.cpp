@@ -237,18 +237,23 @@ namespace fcitx {
     }
 
     void LotusEngine::setSubConfig(const std::string& path, const RawConfig& config) {
-        if (path == "custom_keymap") {
+        if (path == "custom_keymap") { // NOLINT
 #ifdef ENABLE_KEYMAP_EDITOR
+            FCITX_UNUSED(config);
 #else
             customKeymap_.load(config, true);
             safeSaveAsIni(customKeymap_, CustomKeymapFile);
             refreshEngine();
 #endif
         } else if (path == "macro") {
+#ifdef ENABLE_MACRO_EDITOR
+            FCITX_UNUSED(config);
+#else
             macroTables_.load(config, true);
             safeSaveAsIni(macroTables_, MacroTableFile);
             macroTableObject_.reset(newMacroTable(macroTables_));
             refreshEngine();
+#endif
         }
     }
 

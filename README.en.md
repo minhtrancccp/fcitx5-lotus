@@ -47,126 +47,6 @@
 
 This project is an optimized fork of [VMK input method](https://github.com/thanhpy2009/VMK). Sincere thanks to the author Thanh for laying the foundation for this input method.
 
-> **Note:** Please uninstall the `fcitx5-vmk` configuration and remove the old OBS repository (if any) before installing `fcitx5-lotus` to avoid errors.
-
-<details>
-<summary><b>Uninstall and delete <code>fcitx5-vmk</code> configuration</b></summary>
-
-<details>
-<summary><img src="https://img.shields.io/badge/Arch_Linux-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white" alt="Arch Linux" height="25"></summary>
-<br>
-
-You can use `pacman` (recommended), `yay`, or `paru` to uninstall:
-
-```bash
-sudo pacman -Rns fcitx5-vmk
-```
-
-```bash
-yay -Rns fcitx5-vmk
-```
-
-```bash
-paru -Rns fcitx5-vmk
-```
-
-> **Note:** Config files in `$HOME` will be kept.
-
-</details>
-
-<details>
-<summary><b>Debian / Ubuntu / Fedora / openSUSE</b></summary>
-<br>
-
-- **Debian/Ubuntu**
-
-```bash
-sudo apt remove fcitx5-vmk
-```
-
-- **Fedora**
-
-```bash
-sudo dnf remove fcitx5-vmk
-```
-
-- **openSUSE**
-
-```bash
-sudo zypper remove fcitx5-vmk
-```
-
-</details>
-
-<details>
-<summary><img src="https://img.shields.io/badge/NixOS-5277C3?style=for-the-badge&logo=nixos&logoColor=white" alt="NixOS" height="25"></summary>
-<br>
-
-Delete (or comment out) the `services.fcitx5-vmk` and `inputs` lines in the config file, then rebuild the system. NixOS will clean up automatically.
-
-</details>
-
-<details>
-<summary><img src="https://img.shields.io/badge/Source-000000?style=for-the-badge&logo=github&logoColor=white" alt="Source" height="25"></summary>
-<br>
-
-Go back to the built source code directory and run:
-
-```bash
-sudo make uninstall
-```
-
-</details>
-
----
-
-Delete incompatible `vmk` configuration:
-
-```bash
-rm ~/.config/fcitx5/conf/vmk-*.conf
-```
-
-</details>
-
-<details>
-<summary><b>Remove old OBS repo (if any)</b></summary>
-<br>
-
-If you previously installed `fcitx5-lotus` via OBS, run the following commands to remove the old repo:
-
-- **Arch Linux:**
-
-```bash
-# Remove repo in /etc/pacman.conf
-# Remove key:
-sudo pacman-key --finger | grep "home:iamnanoka" -B 1
-sudo pacman-key --delete "ID_OF_KEY"
-sudo pacman-key --updatedb
-sudo pacman -Syy
-```
-
-- **Debian / Ubuntu:**
-
-```bash
-sudo rm -f /etc/apt/sources.list.d/home:iamnanoka.list
-sudo rm -f /etc/apt/trusted.gpg.d/home_iamnanoka.gpg
-sudo apt update
-```
-
-- **Fedora:**
-
-```bash
-sudo rm /etc/yum.repos.d/home:iamnanoka.repo
-```
-
-- **openSUSE:**
-
-```bash
-sudo zypper removerepo home_iamnanoka
-```
-
-</details>
-
 <details>
   <summary><b>Table of Contents</b></summary>
   <ol>
@@ -804,7 +684,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nhktmdzhg"><img src="https://avatars.githubusercontent.com/u/57983253?v=4?s=100" width="100px;" alt="Nguyen Hoang Ky"/><br /><sub><b>Nguyen Hoang Ky</b></sub></a><br /><a href="#blog-nhktmdzhg" title="Blogposts">📝</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=nhktmdzhg" title="Code">💻</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=nhktmdzhg" title="Documentation">📖</a> <a href="#projectManagement-nhktmdzhg" title="Project Management">📆</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/pulls?q=is%3Apr+reviewed-by%3Anhktmdzhg" title="Reviewed Pull Requests">👀</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hthienloc"><img src="https://avatars.githubusercontent.com/u/148019203?v=4?s=100" width="100px;" alt="Huỳnh Thiện Lộc"/><br /><sub><b>Huỳnh Thiện Lộc</b></sub></a><br /><a href="https://github.com/LotusInputMethod/fcitx5-lotus/issues?q=author%3Ahthienloc" title="Bug reports">🐛</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=hthienloc" title="Documentation">📖</a> <a href="#design-hthienloc" title="Design">🎨</a> <a href="#translation-hthienloc" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hthienloc"><img src="https://avatars.githubusercontent.com/u/148019203?v=4?s=100" width="100px;" alt="Huỳnh Thiện Lộc"/><br /><sub><b>Huỳnh Thiện Lộc</b></sub></a><br /><a href="https://github.com/LotusInputMethod/fcitx5-lotus/issues?q=author%3Ahthienloc" title="Bug reports">🐛</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=hthienloc" title="Documentation">📖</a> <a href="#design-hthienloc" title="Design">🎨</a> <a href="#translation-hthienloc" title="Translation">🌍</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=hthienloc" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/justanoobcoder"><img src="https://avatars.githubusercontent.com/u/57614330?v=4?s=100" width="100px;" alt="Nguyễn Hồng Hiệp"/><br /><sub><b>Nguyễn Hồng Hiệp</b></sub></a><br /><a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=justanoobcoder" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Miho1254"><img src="https://avatars.githubusercontent.com/u/83270073?v=4?s=100" width="100px;" alt="Đặng Quang Hiển"/><br /><sub><b>Đặng Quang Hiển</b></sub></a><br /><a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=Miho1254" title="Documentation">📖</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=Miho1254" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Zebra2711"><img src="https://avatars.githubusercontent.com/u/89755535?v=4?s=100" width="100px;" alt="Zebra2711"/><br /><sub><b>Zebra2711</b></sub></a><br /><a href="https://github.com/LotusInputMethod/fcitx5-lotus/issues?q=author%3AZebra2711" title="Bug reports">🐛</a> <a href="https://github.com/LotusInputMethod/fcitx5-lotus/commits?author=Zebra2711" title="Code">💻</a></td>
