@@ -72,6 +72,23 @@ namespace fcitx::lotus {
          */
         void onLoadPresetClicked();
 
+        /**
+         * @brief Imports keymap from file.
+         */
+        void onImportClicked();
+
+        /**
+         * @brief Exports keymap to file.
+         */
+        void onExportClicked();
+
+        /**
+         * @brief Handles row selection.
+         * @param row Selected row.
+         * @param column Selected column.
+         */
+        void onRowSelected(int row, int column);
+
       private: //NOLINT
         QTableWidget*                                  tableWidget_;
         QLineEdit*                                     inputKey_;
@@ -80,6 +97,8 @@ namespace fcitx::lotus {
         QPushButton*                                   btnRemove_;
         QComboBox*                                     comboPreset_;
         QPushButton*                                   btnLoadPreset_;
+        QPushButton*                                   btnImport_;
+        QPushButton*                                   btnExport_;
 
         const std::vector<std::pair<QString, QString>> bambooActions_ = {
             {"XoaDauThanh", "Xóa dấu thanh"},

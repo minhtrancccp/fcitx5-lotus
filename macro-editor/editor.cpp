@@ -31,8 +31,8 @@ namespace fcitx::lotus {
 
         // ── Input row ────────────────────────────────────────────────────────
         auto* inputLayout = new QHBoxLayout();
-        inputKey_->setPlaceholderText(_("Abbreviation (e.g. btv)"));
-        inputValue_->setPlaceholderText(_("Full text (e.g. bộ trưởng văn)"));
+        inputKey_->setPlaceholderText(_("Abbreviation (e.g. kg)"));
+        inputValue_->setPlaceholderText(_("Full text (e.g. khô gà)"));
 
         btnAdd_ = new QPushButton(QIcon::fromTheme("list-add"), "", this);
         btnAdd_->setFixedSize(30, 30);
