@@ -1,20 +1,16 @@
 #!/bin/sh
 set -e
 
-# --- Màu sắc và định dạng ---
 blue='\033[1;34m'
 green='\033[1;32m'
 yellow='\033[1;33m'
 bold='\033[1;1m'
 all_off='\033[0m'
 
-# --- Xác định user thực tế (tránh nhầm với root khi cài qua sudo) ---
 REAL_USER="${SUDO_USER:-$LOGNAME}"
-[ -z "$REAL_USER" ] && REAL_USER=$(whoami)
-USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+[ -z "$REAL_USER" ] && REAL_USER=$(logname)
 
 if [ "$1" = "configure" ]; then
-    # Đảm bảo uinput hoạt động cho Lotus Server
     modprobe uinput || true
     if command -v udevadm >/dev/null; then
         udevadm control --reload-rules || true
@@ -23,94 +19,57 @@ if [ "$1" = "configure" ]; then
     systemd-sysusers || true
 
     echo ""
-    echo -e "${blue}╔══════════════════════════════════════════╗${all_off}"
-    echo -e "${blue}║       Thiết lập tự động cho Lotus        ║${all_off}"
-    echo -e "${blue}╚══════════════════════════════════════════╝${all_off}"
+    printf "%b\n" "${blue}╔══════════════════════════════════════════╗${all_off}"
+    printf "%b\n" "${blue}║       Thiết lập tự động cho Lotus        ║${all_off}"
+    printf "%b\n" "${blue}╚══════════════════════════════════════════╝${all_off}"
     echo ""
 
-    # --- Bước 1: Bật Lotus Server ---
-    echo -e "${bold}[1/4] Đang bật Lotus Server cho ${REAL_USER}...${all_off}"
-    if systemctl enable --now "fcitx5-lotus-server@${REAL_USER}.service" 2>/dev/null; then
-        echo -e "  ${green}✓ Lotus Server đã được kích hoạt.${all_off}"
-    else
-        echo -e "  ${yellow}⚠ Cần bật thủ công: sudo systemctl enable --now fcitx5-lotus-server@${REAL_USER}.service${all_off}"
-    fi
-    echo ""
-
-    # --- Bước 2: Thiết lập biến môi trường ---
-    echo -e "${bold}[2/4] Đang thiết lập biến môi trường...${all_off}"
-    USER_SHELL=$(getent passwd "$REAL_USER" | cut -d: -f7)
-    case "$USER_SHELL" in
-        */zsh)  PROFILE_FILE="$USER_HOME/.zprofile" ;;
-        */fish) PROFILE_FILE="$USER_HOME/.config/fish/config.fish" ;;
-        *)      PROFILE_FILE="$USER_HOME/.bash_profile" ;;
-    esac
-
-    IM_VARS_CHECK='GTK_IM_MODULE=fcitx'
-    if [ -f "$PROFILE_FILE" ] && grep -q "$IM_VARS_CHECK" "$PROFILE_FILE"; then
-        echo -e "  ${green}✓ Biến môi trường đã tồn tại trong ${PROFILE_FILE}.${all_off}"
-    else
-        if echo "$USER_SHELL" | grep -q fish; then
-            mkdir -p "$(dirname "$PROFILE_FILE")"
-            cat >> "$PROFILE_FILE" <<'FISHEOF'
-if status is-login
-    set -Ux GTK_IM_MODULE fcitx
-    set -Ux QT_IM_MODULE fcitx
-    set -Ux XMODIFIERS "@im=fcitx"
-    set -gx SDL_IM_MODULE fcitx
-    set -gx GLFW_IM_MODULE ibus
-end
-FISHEOF
+    if [ -z "$2" ]; then
+        printf "%b\n" "${bold}[1/4] Đang bật Lotus Server cho ${REAL_USER}...${all_off}"
+        if systemctl enable --now "fcitx5-lotus-server@${REAL_USER}.service" 2>/dev/null; then
+            printf "%b\n" "  ${green}✓ Lotus Server đã được kích hoạt.${all_off}"
         else
-            echo -e "\n# Fcitx5 environment (added by fcitx5-lotus)\nexport GTK_IM_MODULE=fcitx\nexport QT_IM_MODULE=fcitx\nexport XMODIFIERS=@im=fcitx\nexport SDL_IM_MODULE=fcitx\nexport GLFW_IM_MODULE=ibus" >> "$PROFILE_FILE"
+            printf "%b\n" "  ${yellow}⚠ Cần bật thủ công: sudo systemctl enable --now fcitx5-lotus-server@${REAL_USER}.service${all_off}"
         fi
-        chown "$REAL_USER:$REAL_USER" "$PROFILE_FILE" || true
-        echo -e "  ${green}✓ Đã thêm cấu hình vào ${PROFILE_FILE}.${all_off}"
-    fi
-    echo ""
+        echo ""
 
-    # --- Bước 3: Tắt bộ gõ cũ (IBus) ---
-    echo -e "${bold}[3/4] Đang dọn dẹp IBus (nếu có)...${all_off}"
-    killall ibus-daemon 2>/dev/null || true
-    rm -f "$USER_HOME/.config/autostart/ibus"* 2>/dev/null || true
-    echo -e "  ${green}✓ Đã tắt IBus để tránh xung đột.${all_off}"
-    echo ""
+        printf "%b\n" "${bold}[2/4] Đang thiết lập biến môi trường hệ thống...${all_off}"
+        ENV_FILE="/etc/environment"
+        
+        add_env_var() {
+            if ! grep -q "^$1=" "$ENV_FILE"; then
+                echo "$1=$2" >> "$ENV_FILE"
+            fi
+        }
 
-    # --- Bước 4: Hướng dẫn Autostart ---
-    echo -e "${bold}[4/4] Hướng dẫn thêm Fcitx5 vào Autostart${all_off}"
-    
-    DE_HINT=""
-    if pgrep -x gnome-shell >/dev/null; then
-        DE_HINT="GNOME: Mở 'GNOME Tweaks' → Startup Applications → Thêm 'Fcitx 5'."
-    elif pgrep -x plasmashell >/dev/null; then
-        DE_HINT="KDE: System Settings → Autostart → Add Application → 'Fcitx 5'."
-    elif pgrep -x xfce4-session >/dev/null; then
-        DE_HINT="XFCE: Settings → Session and Startup → Application Autostart → Thêm 'Fcitx 5'."
-    elif pgrep -x Hyprland >/dev/null; then
-        DE_HINT="Hyprland: Thêm 'exec-once = fcitx5 -d' vào hyprland.conf."
-    elif pgrep -x i3 >/dev/null; then
-        DE_HINT="i3wm: Thêm 'exec --no-startup-id fcitx5 -d' vào file config."
-    elif pgrep -x sway >/dev/null; then
-        DE_HINT="Sway: Thêm 'exec fcitx5 -d' vào file config."
-    elif pgrep -x cinnamon >/dev/null; then
-        DE_HINT="Cinnamon: System Settings → Startup Applications → Thêm 'Fcitx 5'."
-    fi
+        add_env_var "GTK_IM_MODULE" "fcitx"
+        add_env_var "QT_IM_MODULE" "fcitx"
+        add_env_var "XMODIFIERS" "@im=fcitx"
+        add_env_var "SDL_IM_MODULE" "fcitx"
+        add_env_var "GLFW_IM_MODULE" "ibus"
+        
+        printf "%b\n" "  ${green}✓ Đã cập nhật biến môi trường vào ${ENV_FILE}.${all_off}"
+        echo ""
 
-    if [ -n "$DE_HINT" ]; then
-        echo -e "  ${blue}💡 Phát hiện môi trường:${all_off} ${DE_HINT}"
+        printf "%b\n" "${bold}[3/4] Đang dọn dẹp IBus (nếu có)...${all_off}"
+        killall ibus-daemon 2>/dev/null || true
+        USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+        rm -f "$USER_HOME/.config/autostart/ibus"* 2>/dev/null || true
+        printf "%b\n" "  ${green}✓ Đã tắt IBus để tránh xung đột.${all_off}"
+        echo ""
+
+        printf "%b\n" "${blue}─────────────────────────────────────────────${all_off}"
+        printf "%b\n" "${bold}Cần làm tiếp (Xem chi tiết trên GitHub README):${all_off}"
+        printf "%b\n" "  4. Thêm fcitx5 vào autostart cho DE/WM của bạn."
+        printf "%b\n" "  5. Cấu hình bộ gõ: Chạy ${green}fcitx5-configtool${all_off} để thêm Lotus."
+        printf "%b\n" "  6. Wayland (KDE/Hyprland): Thiết lập Virtual Keyboard & Permission."
+        printf "%b\n" "  7. Kanata: Exclude 'Lotus-Uinput-Server' trong cấu hình."
+        printf "%b\n" "${blue}─────────────────────────────────────────────${all_off}"
+        printf "%b\n" "  ${yellow}→ Vui lòng khởi động lại máy để áp dụng thay đổi.${all_off}"
+        echo ""
     else
-        echo -e "  ${yellow}💡 Lưu ý:${all_off} Hãy thêm 'fcitx5' vào danh sách Autostart của bạn."
+        systemctl restart "fcitx5-lotus-server@${REAL_USER}.service" || true
     fi
-    echo ""
-
-    echo -e "${blue}─────────────────────────────────────────────${all_off}"
-    echo -e "${bold}Cần làm tiếp (Xem chi tiết trên GitHub README):${all_off}"
-    echo -e "  5. Cấu hình bộ gõ: Chạy ${green}fcitx5-configtool${all_off} để thêm Lotus."
-    echo -e "  6. Wayland (KDE/Hyprland): Thiết lập Virtual Keyboard & Permission."
-    echo -e "  7. Kanata: Exclude 'Lotus-Uinput-Server' trong cấu hình."
-    echo -e "${blue}─────────────────────────────────────────────${all_off}"
-    echo -e "  ${yellow}→ Vui lòng Log out và Log in lại để áp dụng thay đổi.${all_off}"
-    echo ""
 fi
 
 #DEBHELPER#
