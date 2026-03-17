@@ -170,7 +170,6 @@ namespace fcitx {
          * @brief Performs text replacement via uinput.
          * @param deletedPart Text to delete.
          * @param addedPart Text to insert.
-         * @param triggerKeyFiltered Whether the triggering key was already filtered.
          */
         void performReplacement(const std::string& deletedPart, const std::string& addedPart);
 
