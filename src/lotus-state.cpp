@@ -878,6 +878,7 @@ namespace fcitx {
             ResetEngine(lotusEngine_.handle());
             is_deleting_.store(false);
             current_backspace_count_ = 0;
+            isPrevSpace_             = false;
             needEngineReset.store(false);
         }
 
