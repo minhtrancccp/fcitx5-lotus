@@ -1,3 +1,4 @@
+option(INSTALL_OPENRC "Install OpenRC script" On)
 install(FILES fcitx5-lotus-server@.service
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system)
 
@@ -12,6 +13,8 @@ install(FILES user-lotus.conf
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/sysusers.d
     RENAME lotus.conf)
 
-install(PROGRAMS fcitx5-lotus.openrc
-    DESTINATION /etc/init.d
-    RENAME fcitx5-lotus)
+if(INSTALL_OPENRC)
+    install(PROGRAMS fcitx5-lotus.openrc
+        DESTINATION /etc/init.d
+        RENAME fcitx5-lotus)
+endif(INSTALL_OPENRC)

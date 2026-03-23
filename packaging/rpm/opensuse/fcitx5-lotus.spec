@@ -38,14 +38,13 @@ Vietnamese input method for fcitx5
 %setup -q
 
 %build
-%cmake
+%cmake -DINSTALL_OPENRC=OFF
 %cmake_build
 %sysusers_generate_pre %{_prefix}/lib/sysusers.d/lotus.conf lotus
 
 %install
 %cmake_install
 %find_lang %{name}
-rm -f %{buildroot}%{_sysconfdir}/init.d/fcitx5-lotus
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
