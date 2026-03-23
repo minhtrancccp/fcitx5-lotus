@@ -587,12 +587,9 @@ class ModeManagerPage(QWidget):
         self._update_mode_cards()
 
     def _on_global_mode_changed(self, index):
-        mode_text = self.combo_global_mode.currentText()
-        config_data = self.dbus.get_config()
-        if config_data:
-            latest_values = config_data.get("values", {})
-            latest_values["Mode"] = mode_text
-            self.dbus.set_config(latest_values)
+        if not self.isVisible():
+            return
+        
         self._notify_changed()
 
 
@@ -604,7 +601,6 @@ class ModeManagerPage(QWidget):
         else:
             self.app_rules[self.selected_app] = mode
         
-        self.save_data(quiet=True)
         self._update_mode_cards()
         self._populate_app_list()
         self._notify_changed()
@@ -621,7 +617,6 @@ class ModeManagerPage(QWidget):
             if new_app not in self.app_rules:
                 self.app_rules[new_app] = MODE_SMOOTH
             self.selected_app = new_app
-            self.save_data(quiet=True)
             self._populate_app_list()
             self._notify_changed()
 
@@ -643,7 +638,6 @@ class ModeManagerPage(QWidget):
         self.selected_app = None
         self.app_settings_card.setVisible(False)
         self.btn_remove_app.setEnabled(False)
-        self.save_data(quiet=True)
         self._populate_app_list()
         self._notify_changed()
 
@@ -657,6 +651,13 @@ class ModeManagerPage(QWidget):
         return (
             self.app_rules != self.original_app_rules
             or self.combo_global_mode.currentText() != self.original_global_mode
+        )
+
+    def is_modified_from_default(self):
+        """Returns True if the current state differs from the default state."""
+        return (
+            len(self.app_rules) > 0
+            or self.combo_global_mode.currentText() != "Uinput (Smooth)"
         )
 
     def on_import(self):
@@ -718,7 +719,6 @@ class ModeManagerPage(QWidget):
             imported += 1
 
         if imported > 0:
-            self.save_data(quiet=True)
             self._populate_app_list()
             self._notify_changed()
 
@@ -762,6 +762,13 @@ class ModeManagerPage(QWidget):
 
     def save_data(self, quiet=False):
         try:
+            if self.combo_global_mode.currentText() != self.original_global_mode:
+                config_data = self.dbus.get_config()
+                if config_data:
+                    latest_values = config_data.get("values", {})
+                    latest_values["Mode"] = self.combo_global_mode.currentText()
+                    self.dbus.set_config(latest_values)
+
             data = []
             for app, mode in sorted(self.app_rules.items()):
                 data.append({"App": app, "Mode": str(mode)})
