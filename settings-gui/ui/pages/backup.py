@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
 Backup and Restore page for Lotus settings.
-Supports ZIP-based backups and selective export/import.
+Supports JSON-based backups and selective export/import.
 """
 
 import os
 import json
-import zipfile
 from datetime import datetime
 from PySide6.QtWidgets import (
     QWidget,
@@ -56,10 +55,10 @@ class BackupPage(QWidget):
 
         # Single Card for Export / Import
         self.main_card = CardWidget(_("Export/Import Settings"))
-        
+
         self.import_desc = QLabel(
             _(
-                "Save your configurations to a ZIP file, or restore them from a .lotusbak file. Select what you want to include:"
+                "Save your configurations to a JSON file, or restore them from a .lotusbak file. Select what you want to include:"
             )
         )
         self.import_desc.setWordWrap(True)
@@ -81,15 +80,19 @@ class BackupPage(QWidget):
         # Buttons (Horizontal layout)
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(10)
-        
-        self.btn_export = QPushButton(QIcon.fromTheme("document-save-as"), _("Export Backup..."))
+
+        self.btn_export = QPushButton(
+            QIcon.fromTheme("document-save-as"), _("Export Backup...")
+        )
         self.btn_export.clicked.connect(self.do_export)
         self.btn_export.setMinimumHeight(40)
-        
-        self.btn_import = QPushButton(QIcon.fromTheme("document-open"), _("Import Backup..."))
+
+        self.btn_import = QPushButton(
+            QIcon.fromTheme("document-open"), _("Import Backup...")
+        )
         self.btn_import.clicked.connect(self.on_select_import_file)
         self.btn_import.setMinimumHeight(40)
-        
+
         btn_layout.addWidget(self.btn_export)
         btn_layout.addWidget(self.btn_import)
         self.main_card.content_layout.addLayout(btn_layout)
@@ -100,13 +103,15 @@ class BackupPage(QWidget):
         self.restore_group.setVisible(False)
         self.main_card.content_layout.addWidget(self.restore_group)
 
-        self.btn_restore = QPushButton(QIcon.fromTheme("system-reboot"), _("Restore Selected Now"))
+        self.btn_restore = QPushButton(
+            QIcon.fromTheme("system-reboot"), _("Restore Selected Now")
+        )
         self.btn_restore.clicked.connect(self.on_restore_selected)
         self.btn_restore.setMinimumHeight(40)
         self.btn_restore.setVisible(False)
         self.btn_restore.setStyleSheet("font-weight: bold;")
         self.main_card.content_layout.addWidget(self.btn_restore)
-        
+
         layout.addWidget(self.main_card)
 
         layout.addStretch()
@@ -120,65 +125,76 @@ class BackupPage(QWidget):
         return os.path.join(xdg_data_home, "fcitx5/lotus/vietnamese.cm.dict")
 
     def do_export(self):
-        """Creates a ZIP backup of selected components."""
+        """Creates a JSON backup of selected components."""
         selected = {k: cb.isChecked() for k, cb in self.checkboxes.items()}
         if not any(selected.values()):
-            QMessageBox.warning(self, _("Warning"), _("Please select at least one item to export."))
+            QMessageBox.warning(
+                self, _("Warning"), _("Please select at least one item to export.")
+            )
             return
 
-        default_filename = f"lotus-backup-{datetime.now().strftime('%Y%m%d-%H%M%S')}.lotusbak"
+        default_filename = (
+            f"lotus-backup-{datetime.now().strftime('%Y%m%d-%H%M%S')}.lotusbak"
+        )
         path, _filter = QFileDialog.getSaveFileName(
             self,
             _("Export Backup"),
             os.path.join(os.path.expanduser("~"), default_filename),
-            _("Lotus Backup (*.lotusbak *.zip);;All Files (*)"),
+            _("Lotus Backup (*.lotusbak);;All Files (*)"),
         )
         if not path:
             return
 
         try:
-            with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                # Meta info
-                meta = {
+            backup = {
+                "meta": {
                     "version": 1,
                     "timestamp": datetime.now().isoformat(),
-                    "components": [k for k, v in selected.items() if v]
+                    "components": [k for k, v in selected.items() if v],
                 }
-                zipf.writestr("meta.json", json.dumps(meta, indent=2))
+            }
 
-                if selected["config"]:
-                    config_data = self.dbus.get_config().get("values", {})
-                    zipf.writestr("config.json", json.dumps(config_data, indent=2))
+            if selected["config"]:
+                config_data = self.dbus.get_config().get("values", {})
+                backup["config"] = config_data
 
-                if selected["macros"]:
-                    macros = self.dbus.get_sub_config_list("lotus-macro", "Macro")
-                    zipf.writestr("macros.json", json.dumps(macros, indent=2))
+            if selected["macros"]:
+                macros = self.dbus.get_sub_config_list("lotus-macro", "Macro")
+                backup["macros"] = macros
 
-                if selected["keymaps"]:
-                    keymaps = self.dbus.get_sub_config_list("custom_keymap", "CustomKeymap")
-                    zipf.writestr("keymaps.json", json.dumps(keymaps, indent=2))
+            if selected["keymaps"]:
+                keymaps = self.dbus.get_sub_config_list("custom_keymap", "CustomKeymap")
+                backup["keymaps"] = keymaps
 
-                if selected["rules"]:
-                    rules = self.dbus.get_sub_config_list("app_rules", "Rules")
-                    zipf.writestr("rules.json", json.dumps(rules, indent=2))
+            if selected["rules"]:
+                rules = self.dbus.get_sub_config_list("app_rules", "Rules")
+                backup["rules"] = rules
 
-                if selected["dictionary"]:
-                    dict_path = self._get_local_dict_path()
-                    if os.path.exists(dict_path):
-                        zipf.write(dict_path, "dictionary.txt")
+            if selected["dictionary"]:
+                dict_path = self._get_local_dict_path()
+                if os.path.exists(dict_path):
+                    with open(dict_path, "r", encoding="utf-8") as f:
+                        backup["dictionary"] = f.read()
 
-            QMessageBox.information(self, _("Success"), _("Backup exported successfully to:\n") + path)
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(backup, f, indent=2, ensure_ascii=False)
+
+            QMessageBox.information(
+                self, _("Success"), _("Backup exported successfully to:\n") + path
+            )
 
         except Exception as e:
-            QMessageBox.critical(self, _("Error"), _("Failed to export backup:\n") + str(e))
+            QMessageBox.critical(
+                self, _("Error"), _("Failed to export backup:\n") + str(e)
+            )
 
     def on_select_import_file(self):
-        """Opens a ZIP backup and shows available components for restore."""
+        """Opens a JSON backup and shows available components for restore."""
         path, _filter = QFileDialog.getOpenFileName(
             self,
             _("Select Backup File"),
             os.path.expanduser("~"),
-            _("Lotus Backup (*.lotusbak *.zip);;All Files (*)"),
+            _("Lotus Backup (*.lotusbak);;All Files (*)"),
         )
         if not path:
             return
@@ -191,45 +207,53 @@ class BackupPage(QWidget):
                     widget.deleteLater()
 
             self.restore_checkboxes = {}
-            self.restore_data = {"zip_path": path}
+            self.restore_data = {"json_path": path}
 
-            with zipfile.ZipFile(path, 'r') as zipf:
-                namelist = zipf.namelist()
-                
-                options = [
-                    ("config.json", "config", _("Main Settings")),
-                    ("macros.json", "macros", _("Macros")),
-                    ("keymaps.json", "keymaps", _("Custom Keymaps")),
-                    ("rules.json", "rules", _("Application Rules")),
-                    ("dictionary.txt", "dictionary", _("Custom Dictionary")),
-                ]
+            with open(path, "r", encoding="utf-8") as f:
+                backup = json.load(f)
 
-                found_any = False
-                for filename, key, label in options:
-                    if filename in namelist:
-                        cb = QCheckBox(label)
-                        cb.setChecked(True)
-                        self.restore_checkboxes[key] = cb
-                        self.restore_group_layout.addWidget(cb)
-                        found_any = True
+            options = [
+                ("config", _("Main Settings")),
+                ("macros", _("Macros")),
+                ("keymaps", _("Custom Keymaps")),
+                ("rules", _("Application Rules")),
+                ("dictionary", _("Custom Dictionary")),
+            ]
 
-                if not found_any:
-                    raise ValueError(_("Invalid backup file: No recognizable components found."))
+            found_any = False
+            for key, label in options:
+                if key in backup:
+                    cb = QCheckBox(label)
+                    cb.setChecked(True)
+                    self.restore_checkboxes[key] = cb
+                    self.restore_group_layout.addWidget(cb)
+                    found_any = True
+
+            if not found_any:
+                raise ValueError(
+                    _("Invalid backup file: No recognizable components found.")
+                )
 
             self.restore_group.setVisible(True)
             self.btn_restore.setVisible(True)
 
         except Exception as e:
-            QMessageBox.critical(self, _("Error"), _("Failed to open backup file:\n") + str(e))
+            QMessageBox.critical(
+                self, _("Error"), _("Failed to open backup file:\n") + str(e)
+            )
 
     def on_restore_selected(self):
-        """Applies selected components from the ZIP backup."""
-        if not self.restore_data or "zip_path" not in self.restore_data:
+        """Applies selected components from the JSON backup."""
+        if not self.restore_data or "json_path" not in self.restore_data:
             return
 
-        selected_keys = [k for k, cb in self.restore_checkboxes.items() if cb.isChecked()]
+        selected_keys = [
+            k for k, cb in self.restore_checkboxes.items() if cb.isChecked()
+        ]
         if not selected_keys:
-            QMessageBox.warning(self, _("Warning"), _("Please select at least one item to restore."))
+            QMessageBox.warning(
+                self, _("Warning"), _("Please select at least one item to restore.")
+            )
             return
 
         reply = QMessageBox.warning(
@@ -244,28 +268,28 @@ class BackupPage(QWidget):
             return
 
         try:
-            with zipfile.ZipFile(self.restore_data["zip_path"], 'r') as zipf:
-                if "config" in selected_keys:
-                    data = json.loads(zipf.read("config.json"))
-                    self.dbus.set_config(data)
+            with open(self.restore_data["json_path"], "r", encoding="utf-8") as f:
+                backup = json.load(f)
 
-                if "macros" in selected_keys:
-                    data = json.loads(zipf.read("macros.json"))
-                    self.dbus.set_sub_config_list("lotus-macro", "Macro", data)
+            if "config" in selected_keys and "config" in backup:
+                self.dbus.set_config(backup["config"])
 
-                if "keymaps" in selected_keys:
-                    data = json.loads(zipf.read("keymaps.json"))
-                    self.dbus.set_sub_config_list("custom_keymap", "CustomKeymap", data)
+            if "macros" in selected_keys and "macros" in backup:
+                self.dbus.set_sub_config_list("lotus-macro", "Macro", backup["macros"])
 
-                if "rules" in selected_keys:
-                    data = json.loads(zipf.read("rules.json"))
-                    self.dbus.set_sub_config_list("app_rules", "Rules", data)
+            if "keymaps" in selected_keys and "keymaps" in backup:
+                self.dbus.set_sub_config_list(
+                    "custom_keymap", "CustomKeymap", backup["keymaps"]
+                )
 
-                if "dictionary" in selected_keys:
-                    dict_path = self._get_local_dict_path()
-                    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
-                    with open(dict_path, "wb") as f:
-                        f.write(zipf.read("dictionary.txt"))
+            if "rules" in selected_keys and "rules" in backup:
+                self.dbus.set_sub_config_list("app_rules", "Rules", backup["rules"])
+
+            if "dictionary" in selected_keys and "dictionary" in backup:
+                dict_path = self._get_local_dict_path()
+                os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+                with open(dict_path, "w", encoding="utf-8") as f:
+                    f.write(backup["dictionary"])
 
             QMessageBox.information(
                 self,
@@ -286,4 +310,6 @@ class BackupPage(QWidget):
             self.restore_data = None
 
         except Exception as e:
-            QMessageBox.critical(self, _("Error"), _("Failed to restore backup:\n") + str(e))
+            QMessageBox.critical(
+                self, _("Error"), _("Failed to restore backup:\n") + str(e)
+            )
