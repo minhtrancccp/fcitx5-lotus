@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QFileDialog,
     QCheckBox,
+    QComboBox,
 )
 from PySide6.QtGui import QIcon, QColor
 from PySide6.QtCore import Qt
@@ -80,6 +81,70 @@ class MacroEditorPage(BaseEditorPage):
         content_layout = QVBoxLayout()
         editor_card.content_layout.addLayout(content_layout)
         main_layout.addWidget(editor_card)
+
+        # Dynamic Macro Settings (Moved below the macro table)
+        dynamic_card = CardWidget("")
+        dynamic_layout = QVBoxLayout()
+        
+        # Hint text
+        hint_label = QLabel(_("Macros can use dynamic placeholders: $TIME (current time) and $DATE (current date)."))
+        hint_label.setWordWrap(True)
+        hint_label.setStyleSheet("color: gray; font-size: 13px;")
+        dynamic_layout.addWidget(hint_label)
+        
+        # Format Inputs
+        fmt_container = QWidget()
+        fmt_vbox = QVBoxLayout(fmt_container)
+        fmt_vbox.setContentsMargins(0, 5, 0, 0)
+        
+        # Time Format
+        time_layout = QHBoxLayout()
+        self.input_time_format = QComboBox()
+        self.input_time_format.setEditable(False)
+        self.input_time_format.currentIndexChanged.connect(self._on_item_changed)
+        
+        time_presets = [
+            ("%H:%M", _("15:04 (24h)")),
+            ("%H:%M:%S", _("15:04:05 (24h)")),
+            ("%I:%M %p", _("03:04 PM")),
+            ("%I:%M:%S %p", _("03:04:05 PM")),
+            ("", _("None (Do not replace $TIME)")),
+        ]
+        for fmt, desc in time_presets:
+            self.input_time_format.addItem(fmt, fmt)
+            self.input_time_format.setItemData(self.input_time_format.count() - 1, desc, Qt.ToolTipRole)
+
+        time_layout.addWidget(QLabel(_("Time Format:")))
+        time_layout.addWidget(self.input_time_format, 1)
+        
+        # Date Format
+        date_layout = QHBoxLayout()
+        self.input_date_format = QComboBox()
+        self.input_date_format.setEditable(False)
+        self.input_date_format.currentIndexChanged.connect(self._on_item_changed)
+
+        date_presets = [
+            ("%d/%m/%Y", _("dd/MM/yyyy")),
+            ("%d/%m/%y", _("dd/MM/yy")),
+            ("%m/%d/%Y", _("MM/dd/yyyy")),
+            ("%Y-%m-%d", _("yyyy-MM-dd")),
+            ("%y-%m-%d", _("yy-MM-dd")),
+            ("", _("None (Do not replace $DATE)")),
+        ]
+        for fmt, desc in date_presets:
+            self.input_date_format.addItem(fmt, fmt)
+            self.input_date_format.setItemData(self.input_date_format.count() - 1, desc, Qt.ToolTipRole)
+
+        date_layout.addWidget(QLabel(_("Date Format:")))
+        date_layout.addWidget(self.input_date_format, 1)
+        
+        fmt_vbox.addLayout(time_layout)
+        fmt_vbox.addLayout(date_layout)
+        
+        dynamic_layout.addWidget(fmt_container)
+        
+        dynamic_card.content_layout.addLayout(dynamic_layout)
+        main_layout.addWidget(dynamic_card)
 
         # 1. Input Row (Top)
         input_layout = QHBoxLayout()
@@ -153,6 +218,22 @@ class MacroEditorPage(BaseEditorPage):
                 self.cb_capitalize.setChecked(
                     str(values.get("CapitalizeMacro", "True")).lower() == "true"
                 )
+                # Set time format (default %H:%M)
+                time_fmt = values.get("TimeFormat", "%H:%M")
+                index = self.input_time_format.findData(time_fmt)
+                if index >= 0:
+                    self.input_time_format.setCurrentIndex(index)
+                else:
+                    # Fallback to default if not in list (since it's not editable anymore)
+                    self.input_time_format.setCurrentIndex(self.input_time_format.findData("%H:%M"))
+
+                # Set date format
+                date_fmt = values.get("DateFormat", "%d/%m/%Y")
+                index = self.input_date_format.findData(date_fmt)
+                if index >= 0:
+                    self.input_date_format.setCurrentIndex(index)
+                else:
+                    self.input_date_format.setCurrentIndex(self.input_date_format.findData("%d/%m/%Y"))
 
             self.table.setRowCount(0)
             data = self.dbus.get_sub_config_list("lotus-macro", "Macro")
@@ -201,6 +282,8 @@ class MacroEditorPage(BaseEditorPage):
             "data": data,
             "EnableMacro": self.cb_enable.isChecked(),
             "CapitalizeMacro": self.cb_capitalize.isChecked(),
+            "TimeFormat": self.input_time_format.currentText(),
+            "DateFormat": self.input_date_format.currentText(),
         }
 
     def save_data(self):
@@ -212,6 +295,8 @@ class MacroEditorPage(BaseEditorPage):
             values["CapitalizeMacro"] = (
                 "True" if self.cb_capitalize.isChecked() else "False"
             )
+            values["TimeFormat"] = self.input_time_format.currentText()
+            values["DateFormat"] = self.input_date_format.currentText()
             self.dbus.set_config(values)
 
         data = []

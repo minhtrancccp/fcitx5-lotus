@@ -10,6 +10,7 @@ package main
 import (
 	"bamboo-core"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -29,6 +30,8 @@ type FcitxBambooEngine struct {
 	shouldRestoreKeyStrokes bool
 	outputCharset           string
 	w2u                     bool
+	timeFormat              string
+	dateFormat              string
 }
 
 
@@ -76,8 +79,56 @@ func determineMacroCase(str string) uint8 {
 	return VnCaseAllCapital
 }
 
+var strftimeReplacer = strings.NewReplacer(
+	"%H", "15",
+	"%I", "03",
+	"%M", "04",
+	"%S", "05",
+	"%p", "PM",
+	"%P", "pm",
+	"%d", "02",
+	"%m", "01",
+	"%Y", "2006",
+	"%y", "06",
+	"%b", "Jan",
+	"%B", "January",
+	"%a", "Mon",
+	"%A", "Monday",
+	// Some common variants
+	"%D", "01/02/06",
+	"%F", "2006-01-02",
+	"%T", "15:04:05",
+	"%R", "15:04",
+)
+
+func (e *FcitxBambooEngine) formatTime(format string) string {
+	now := time.Now()
+	if format == "" {
+		return ""
+	}
+	layout := strftimeReplacer.Replace(format)
+	if layout == "" {
+		return ""
+	}
+	// If layout was not changed (no placeholders found), default to standard format
+	if layout == format && strings.Contains(format, "%") {
+		// Fallback to something reasonable if it looks like they tried to use placeholders
+		return now.Format("15:04:05 02/01/2006")
+	}
+	return now.Format(layout)
+}
+
 func (e *FcitxBambooEngine) expandMacro(str string) string {
 	var macroText = e.macroTable.GetText(str)
+
+	// Replace dynamic placeholders
+	if e.timeFormat != "" {
+		macroText = strings.ReplaceAll(macroText, "$TIME", e.formatTime(e.timeFormat))
+	}
+	if e.dateFormat != "" {
+		macroText = strings.ReplaceAll(macroText, "$DATE", e.formatTime(e.dateFormat))
+	}
+
 	if e.autoCapitalizeMacro {
 		switch determineMacroCase(str) {
 		case VnCaseAllSmall:

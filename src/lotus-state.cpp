@@ -70,6 +70,8 @@ namespace fcitx {
             .modernStyle         = *engine_->config().modernStyle,
             .freeMarking         = *engine_->config().freeMarking,
             .w2u                 = *engine_->config().w2u,
+            .timeFormat          = engine_->config().timeFormat->data(),
+            .dateFormat          = engine_->config().dateFormat->data(),
         };
 
         EngineSetOption(lotusEngine_.handle(), &option);

@@ -21,6 +21,8 @@ import (
 			bool modernStyle;
 			bool freeMarking;
 			bool w2u;
+			const char *timeFormat;
+			const char *dateFormat;
 		} FcitxBambooEngineOption;
 	*/
 	"C"
@@ -121,6 +123,8 @@ func EngineSetOption(engine uintptr, option *C.FcitxBambooEngineOption) {
 		flags &= ^bamboo.Ew2uEnabled
 	}
 	bambooEngine.preeditor.SetFlag(flags)
+	bambooEngine.timeFormat = C.GoString(option.timeFormat)
+	bambooEngine.dateFormat = C.GoString(option.dateFormat)
 }
 
 //export NewEngine
@@ -151,6 +155,8 @@ func NewEngine(name *C.cchar, dictHandle uintptr, tableHandle uintptr) uintptr {
 		commitText:              "",
 		shouldRestoreKeyStrokes: false,
 		outputCharset:           "Unicode",
+		timeFormat:              "%H:%M",
+		dateFormat:              "%d/%m/%Y",
 	}
 	return uintptr(cgo.NewHandle(engine))
 }
@@ -192,6 +198,8 @@ func NewCustomEngine(definition **C.char, dictHandle uintptr, tableHandle uintpt
 		commitText:              "",
 		shouldRestoreKeyStrokes: false,
 		outputCharset:           "Unicode",
+		timeFormat:              "%H:%M",
+		dateFormat:              "%d/%m/%Y",
 	}
 
 	return uintptr(cgo.NewHandle(engine))
