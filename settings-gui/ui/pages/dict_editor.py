@@ -221,7 +221,7 @@ class DictEditorPage(BaseEditorPage):
             "EnableDictionary": self.cb_enable.isChecked(),
         }
 
-    def save_data(self, quiet=False):
+    def save_data(self):
         # Save global dictionary settings via DBus
         config_data = self.dbus.get_config()
         if config_data:
@@ -243,8 +243,6 @@ class DictEditorPage(BaseEditorPage):
                     self.dbus.set_config(current_config.get("values", {}))
 
             self.initial_state = self._get_current_state()
-            if not quiet:
-                QMessageBox.information(self, _("Success"), _("Dictionary saved successfully to local storage."))
         except Exception as e:
             QMessageBox.warning(self, _("Error"), f"Failed to save dictionary: {e}")
 
@@ -355,7 +353,7 @@ class DictEditorPage(BaseEditorPage):
             with open(path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
         except (IOError, OSError, UnicodeDecodeError) as e:
-            QMessageBox.warning(self, "Error", f"Cannot open file for reading: {e}")
+            QMessageBox.warning(self, "Error", _("Cannot open file for reading: {}").format(e))
             return
 
         imported = 0
@@ -417,5 +415,5 @@ class DictEditorPage(BaseEditorPage):
                 _("Export Complete"),
                 _(f"Exported {len(self.words)} words to:\n{path}"),
             )
-        except (IOError, OSError) as e:
-            QMessageBox.warning(self, "Error", f"Cannot open file for writing: {e}")
+        except (IOError, OSError, UnicodeDecodeError) as e:
+            QMessageBox.warning(self, "Error", _("Cannot open file for writing: {}").format(e))

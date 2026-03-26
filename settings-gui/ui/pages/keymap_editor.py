@@ -383,7 +383,7 @@ class KeymapEditorPage(BaseEditorPage):
             "EnableCustomKeymap": self.cb_enable.isChecked(),
         }
 
-    def save_data(self, quiet=False):
+    def save_data(self):
         """Saves current table via DBus to C++ Engine."""
         # Save toggle
         config_data = self.dbus.get_config()
@@ -402,8 +402,6 @@ class KeymapEditorPage(BaseEditorPage):
 
         self.dbus.set_sub_config_list("custom_keymap", "CustomKeymap", data)
         self.initial_state = self._get_current_state()
-        if not quiet:
-            QMessageBox.information(self, _("Success"), _("Keymap saved successfully."))
 
     def on_search_changed(self):
         """Filters the table rows based on the search input."""
@@ -429,7 +427,8 @@ class KeymapEditorPage(BaseEditorPage):
 
         # Check for update
         for row in range(self.table.rowCount()):
-            if self.table.item(row, 0).text() == key:
+            item = self.table.item(row, 0)
+            if item and item.text() == key:
                 combo = self.table.cellWidget(row, 1)
                 if combo:
                     combo.setCurrentIndex(self.combo_action.currentIndex())
@@ -498,7 +497,7 @@ class KeymapEditorPage(BaseEditorPage):
             with open(path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Cannot open file for reading: {e}")
+            QMessageBox.warning(self, "Error", _("Cannot open file for reading: {}").format(e))
             return
         imported = skipped = 0
         confirmed = False
@@ -532,7 +531,8 @@ class KeymapEditorPage(BaseEditorPage):
             # Upsert
             found = False
             for row in range(self.table.rowCount()):
-                if self.table.item(row, 0).text() == key:
+                item = self.table.item(row, 0)
+                if item and item.text() == key:
                     combo = self.table.cellWidget(row, 1)
                     if combo:
                         idx = combo.findData(action_code)
@@ -585,4 +585,4 @@ class KeymapEditorPage(BaseEditorPage):
                 _(f"Exported {self.table.rowCount()} entries to:\n{path}"),
             )
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Cannot open file for writing: {e}")
+            QMessageBox.warning(self, "Error", _("Cannot open file for writing: {}").format(e))

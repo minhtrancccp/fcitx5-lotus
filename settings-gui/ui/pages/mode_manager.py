@@ -786,7 +786,7 @@ class ModeManagerPage(QWidget):
         except Exception as e:
             QMessageBox.warning(self, _("Error"), f"{_('Cannot open file for writing:')} {e}")
 
-    def save_data(self, quiet=False):
+    def save_data(self):
         try:
             if self.combo_global_mode.currentText() != self.original_global_mode:
                 config_data = self.dbus.get_config()
@@ -803,12 +803,8 @@ class ModeManagerPage(QWidget):
             self.original_app_rules = self.app_rules.copy()
             self.original_global_mode = self.combo_global_mode.currentText()
 
-            if not quiet:
-                QMessageBox.information(self, _("Success"), _("Application rules saved successfully."))
         except Exception as e:
             print(f"Error saving app rules via DBus: {e}")
-            if not quiet:
-                QMessageBox.warning(self, _("Error"), f"{_('Failed to save app rules:')} {e}")
 
     def restore_defaults(self):
         self.load_data()

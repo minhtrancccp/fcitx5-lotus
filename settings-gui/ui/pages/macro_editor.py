@@ -203,7 +203,7 @@ class MacroEditorPage(BaseEditorPage):
             "CapitalizeMacro": self.cb_capitalize.isChecked(),
         }
 
-    def save_data(self, quiet=False):
+    def save_data(self):
         # Save global macro settings via DBus
         config_data = self.dbus.get_config()
         if config_data:
@@ -226,8 +226,6 @@ class MacroEditorPage(BaseEditorPage):
 
         self.dbus.set_sub_config_list("lotus-macro", "Macro", data)
         self.initial_state = self._get_current_state()
-        if not quiet:
-            QMessageBox.information(self, _("Success"), _("Macros saved successfully."))
 
     def upsert_row(self, key: str, value: str, sort: bool = True):
         # Update existing
@@ -380,7 +378,7 @@ class MacroEditorPage(BaseEditorPage):
             with open(path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Cannot open file for reading: {e}")
+            QMessageBox.warning(self, "Error", _("Cannot open file for reading: {}").format(e))
             return
 
         imported = skipped = 0
@@ -450,4 +448,4 @@ class MacroEditorPage(BaseEditorPage):
                 _(f"Exported {self.table.rowCount()} entries to:\n{path}"),
             )
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Cannot open file for writing: {e}")
+            QMessageBox.warning(self, "Error", _("Cannot open file for writing: {}").format(e))
